@@ -1,17 +1,81 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CharacterController : MonoBehaviour
 {
+  Rigidbody2D rb;
+  // [SerializeField]
+  float movementSpeed = 500;
+  // [SerializeField]
+  float jumpForce = 85;
+  float inputX;
+  bool jump = false;
+  bool isOnGround = true;
+  Vector2 movementDirection;
+  [SerializeField]
+  LayerMask groundLayer;
+  SpriteRenderer spriteRenderer;
+  bool isRightDirection = true;
+  Vector3 cameraPosition;
+
   void Start()
   {
-    Debug.Log("Hello");
+    spriteRenderer = GetComponent<SpriteRenderer>();
+    rb = GetComponent<Rigidbody2D>();
+    rb.gravityScale = 5;
   }
 
   void Update()
   {
+    inputX = Input.GetAxisRaw("Horizontal");
 
+    if ((Mathf.Sign(inputX) == 1) && (rb.velocity.x > float.Epsilon))
+    {
+      isRightDirection = true;
+    }
+    else if ((Mathf.Sign(inputX) == -1) && (rb.velocity.x < -float.Epsilon))
+    {
+      isRightDirection = false;
+    }
+
+    spriteRenderer.flipX = !isRightDirection;
+
+    isOnGround = Physics2D.OverlapCircle(transform.position, 2f, groundLayer);
+    if ((Input.GetKey(KeyCode.Space)) && isOnGround)
+    {
+      jump = true;
+    }
+    if (rb.velocity.y < -0.1f)
+    {
+      rb.gravityScale = 9.5f;
+    }
+    else
+    {
+      rb.gravityScale = 5f;
+    }
   }
-  
+
+  void LateUpdate()
+  {
+    cameraPosition = transform.position + Vector3.up * 4 + Vector3.forward * -10;
+    // if (isOnGround)
+    {
+      // Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, cameraPosition, (Time.time % 1f) / 20);
+      Camera.main.transform.position = cameraPosition;
+    }
+  }
+
+  void FixedUpdate()
+  {
+    movementDirection = new Vector2(inputX * Time.deltaTime * movementSpeed, rb.velocity.y);
+    rb.velocity = movementDirection;
+    if (jump)
+    {
+      rb.velocity = new Vector2(rb.velocity.x, 0);
+      rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+      jump = false;
+    }
+  }
 }
