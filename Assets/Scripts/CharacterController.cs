@@ -19,11 +19,16 @@ public class CharacterController : MonoBehaviour
   bool isRightDirection = true;
   Vector3 cameraPosition;
 
+  Animator animator;
+
   void Start()
   {
     spriteRenderer = GetComponent<SpriteRenderer>();
     rb = GetComponent<Rigidbody2D>();
     rb.gravityScale = 5;
+
+    animator = GetComponent<Animator>();
+    animator.SetBool("isWalking", true);
   }
 
   void Update()
@@ -42,6 +47,7 @@ public class CharacterController : MonoBehaviour
     spriteRenderer.flipX = !isRightDirection;
 
     isOnGround = Physics2D.OverlapCircle(transform.position, 2f, groundLayer);
+    if (isOnGround) animator.SetBool("isJumping", false);
     if ((Input.GetKey(KeyCode.Space)) && isOnGround)
     {
       jump = true;
@@ -53,17 +59,18 @@ public class CharacterController : MonoBehaviour
     else
     {
       rb.gravityScale = 5f;
+
     }
   }
 
   void LateUpdate()
   {
-    cameraPosition = transform.position + Vector3.up * 4 + Vector3.forward * -10;
-    // if (isOnGround)
-    {
-      // Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, cameraPosition, (Time.time % 1f) / 20);
-      Camera.main.transform.position = cameraPosition;
-    }
+    // cameraPosition = transform.position + Vector3.up * 4 + Vector3.forward * -10;
+    // // if (isOnGround)
+    // {
+    //   // Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, cameraPosition, (Time.time % 1f) / 20);
+    //   Camera.main.transform.position = cameraPosition;
+    // }
   }
 
   void FixedUpdate()
@@ -72,6 +79,10 @@ public class CharacterController : MonoBehaviour
     rb.velocity = movementDirection;
     if (jump)
     {
+      // animator.SetBool("isWalking", false);
+      animator.SetBool("isWalking", false);
+      animator.SetBool("isPushing", false);
+      animator.SetBool("isJumping", true);
       rb.velocity = new Vector2(rb.velocity.x, 0);
       rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
       jump = false;
