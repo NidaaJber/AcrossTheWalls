@@ -25,7 +25,6 @@ public class CharacterController : MonoBehaviour
     spriteRenderer = GetComponent<SpriteRenderer>();
     rb = GetComponent<Rigidbody2D>();
     rb.gravityScale = 5;
-
     animator = GetComponent<Animator>();
   }
 
@@ -63,7 +62,6 @@ public class CharacterController : MonoBehaviour
     else
     {
       rb.gravityScale = 5f;
-
     }
   }
 
@@ -80,7 +78,12 @@ public class CharacterController : MonoBehaviour
   void FixedUpdate()
   {
     movementDirection = new Vector2(inputX * Time.deltaTime * movementSpeed, rb.velocity.y);
-    rb.velocity = movementDirection;
+
+    // if (Mathf.Abs(inputX) > 0)
+    //   rb.velocity = movementDirection;
+    // else
+    //   rb.velocity = new Vector2(0, rb.velocity.y);
+
     if (jump)
     {
       // animator.SetBool("isWalking", false);
