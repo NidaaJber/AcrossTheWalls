@@ -5,6 +5,7 @@ using UnityEngine;
 public class CharacterController : MonoBehaviour
 {
   Rigidbody2D rb;
+  Animator animator;
   // [SerializeField]
   float movementSpeed = 500;
   // [SerializeField]
@@ -17,9 +18,7 @@ public class CharacterController : MonoBehaviour
   LayerMask groundLayer;
   SpriteRenderer spriteRenderer;
   bool isRightDirection = true;
-  Vector3 cameraPosition;
-
-  Animator animator;
+  // Vector3 cameraPosition;
 
   void Start()
   {
@@ -28,7 +27,6 @@ public class CharacterController : MonoBehaviour
     rb.gravityScale = 5;
 
     animator = GetComponent<Animator>();
-    animator.SetBool("isWalking", true);
   }
 
   void Update()
@@ -38,10 +36,16 @@ public class CharacterController : MonoBehaviour
     if ((Mathf.Sign(inputX) == 1) && (rb.velocity.x > float.Epsilon))
     {
       isRightDirection = true;
+      animator.SetBool("isWalking", true);
     }
     else if ((Mathf.Sign(inputX) == -1) && (rb.velocity.x < -float.Epsilon))
     {
       isRightDirection = false;
+      animator.SetBool("isWalking", true);
+    }
+    else
+    {
+      animator.SetBool("isWalking", false);
     }
 
     spriteRenderer.flipX = !isRightDirection;
