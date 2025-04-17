@@ -1,67 +1,101 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using UnityEngine.SceneManagement;
+using System;
+using System.Collections;
 
 public class DialogueManager : MonoBehaviour
 {
-    [SerializeField] Image characterImage;
+    [Header("Scriptable Objects")]
+    [SerializeField] DialogueData dialogueData;
+    [SerializeField] DialogueAdditionalResources dialogueAdditionalResources;
+
+    [Space]
+    [Header("Arabic Support")]
     [SerializeField] ArabicFixerTMPRO arabicDialogueText;
-    [SerializeField] Sprite father;
-    [SerializeField] Sprite Son;
-    [SerializeField] TextMeshProUGUI dialogueText1;
-    // [SerializeField] TextMeshProUGUI dialogueText2;
+
+    [Space]
+    [Header("UI Elements")]
+    [SerializeField] Image characterImage;
     [SerializeField] Button mainButton;
     [SerializeField] GameObject buttonsPanel;
-    // [SerializeField] Button button1;
-    // [SerializeField] Button button2;
-    int indexOfDisplyedDialogue = 0;
 
+    [Space]
+    [Header("Settings")]
+    [SerializeField] float typeWriteSpeed = 0.02f;
+    AudioSource audioSource;
+    bool isTyping = true;
+    string text, dialogeText;
+    Coroutine typeWriteCoroutine;
 
-    string[] dialogueTexts =
+    void Awake()
     {
-        "يا ولدي، لم تعد لدي القدرة على إكمال المسير، أريد أن أستريح قليلاً...",
-        "طمني عنك يا أبي، هل أنت على ما يرام، ماذا تشعر!?",
-        "أنا بخير يا ولدي اطمئن، مجرد تعب بسيط...",
-        "أنا قلق جدا عليك يا أبتي، هل أحضر لك الطبيب؟!",
-        "لا يا ولدي، لكني أود أن أوصيك بأن تكمل المسير، وتصل قريتنا العزيزة...",
-        " أبي أنا خائف عليك جداً دعني أحضر لك الطبيب، يا ناس!! أبي مريض نادوا الطبيب … نادوا الطبيب!!",
-        "مهجة قلبي أحمد، اطمئن، أظن أن المنية قد حانت، دعني ألمس وجهك..." + "\n" +"أوصيك بإكمال المسير...",
-        "أبي .. سيحضر الطبيب حالاً. لا تتركني يا أبي، أنا نا بحاجة إليك جداً، وغداً سنكمل المسير معاً!!",
-        "أحبك يا ولدي، أشهد أن لا إله إلا الله وأشهد أن محمداً رسول الله...",
-        "أبي!! أبي!!! أبي !!!!",
-    };
-
-    // string istamer = "أوصيك بإكمال المسير من بعدي.";
-
+        audioSource = GetComponent<AudioSource>();
+        audioSource.clip = dialogueAdditionalResources.DialogueSFX;
+    }
     void Start()
     {
+        dialogueData.DialogueIndex = 0;
         ViewNextDialogue();
+        if (dialogueAdditionalResources.DialogueSFX == null)
+        {
+            Debug.Log("No AudioSource!!!!!");
+        }
+    }
+
+    void Update()
+    {
+        arabicDialogueText.fixedText = dialogeText;
     }
 
     public void ViewNextDialogue()
     {
-        if (indexOfDisplyedDialogue >= dialogueTexts.Length)
+
+        if (dialogueData.DialogueIndex >= dialogueData.Length)
         {
             mainButton.gameObject.SetActive(false);
             buttonsPanel.gameObject.SetActive(true);
 
             return;
         }
+        PlayDialogueSoundEffect();
 
-        if (indexOfDisplyedDialogue % 2 == 0)
+        if (dialogueData.DialogueIndex % 2 == 0)
         {
-            characterImage.sprite = father;
+            characterImage.sprite = dialogueAdditionalResources.Father;
         }
         else
         {
-            characterImage.sprite = Son;
+            characterImage.sprite = dialogueAdditionalResources.Son;
 
         }
-        // dialogueText1.text = dialogueTexts[indexOfDisplyedDialogue++];
-        arabicDialogueText.fixedText = dialogueTexts[indexOfDisplyedDialogue++];
+        text = dialogueData.GetNextDialogueLine();
+
+        if (typeWriteCoroutine != null)
+        {
+            StopCoroutine(typeWriteCoroutine);
+        }
+
+        typeWriteCoroutine = StartCoroutine(TypeWrite());
+    }
+
+    void PlayDialogueSoundEffect()
+    {
+        audioSource.Stop();
+        audioSource.Play();
+    }
+
+    IEnumerator TypeWrite()
+    {
+        dialogeText = "";
+        isTyping = true;
+        foreach (char letter in text)
+        {
+            dialogeText += letter;
+            yield return new WaitForSeconds(typeWriteSpeed);
+        }
+
+        isTyping = false;
     }
 
     public void LoadTheGame()
