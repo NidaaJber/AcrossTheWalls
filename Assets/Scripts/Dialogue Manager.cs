@@ -43,11 +43,6 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        arabicDialogueText.fixedText = dialogeText;
-    }
-
     public void ViewNextDialogue()
     {
 
@@ -88,14 +83,12 @@ public class DialogueManager : MonoBehaviour
     IEnumerator TypeWrite()
     {
         dialogeText = "";
-        isTyping = true;
         foreach (char letter in text)
         {
             dialogeText += letter;
+            arabicDialogueText.fixedText = dialogeText;
             yield return new WaitForSeconds(typeWriteSpeed);
         }
-
-        isTyping = false;
     }
 
     public void LoadTheGame()
